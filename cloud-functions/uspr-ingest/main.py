@@ -1,21 +1,18 @@
-from google.cloud import storage
-from google.cloud import bigquery
-from google.cloud import firestore
-from google.cloud import pubsub_v1
-from google.api_core import retry
-from google.cloud import error_reporting
+import datetime
 import logging
-import traceback
 import os
 import re
-from bs4 import BeautifulSoup as bs
-import lxml
-import datetime
-import pandas as pd
-import json
+import traceback
 from datetime import datetime, timedelta
+
+import pandas as pd
 import pytz
-import pyarrow
+from bs4 import BeautifulSoup as bs
+from google.cloud import bigquery
+from google.cloud import error_reporting
+from google.cloud import firestore
+from google.cloud import pubsub_v1
+from google.cloud import storage
 
 PROJECT_ID = os.getenv('GCP_PROJECT')
 BQ_DATASET = 'test'
@@ -31,6 +28,7 @@ NO_TICKER_TOPIC = 'projects/%s/topics/%s' % (PROJECT_ID, 'uspr_streaming_no_tick
 
 CS = storage.Client()
 ER = error_reporting.Client()
+
 BQ = bigquery.Client()
 FS = firestore.Client()
 PS = pubsub_v1.PublisherClient()
@@ -199,7 +197,8 @@ def _scraper(blob, filename):
 
     try:
         received_dt = \
-        [x.get_text() for x in soup.find_all('vendorData') if 'Special Code=PC/t' in x.get_text()][0].split('t.')[-1]
+            [x.get_text() for x in soup.find_all('vendorData') if 'Special Code=PC/t' in x.get_text()][0].split('t.')[
+                -1]
         received_dt = datetime.strptime(received_dt, '%y%m%d%H%M%S%f')
         received_dt += timedelta(hours=int(soup.find('xn:publicationTime').get_text()[-4]))
         received_dt = pytz.utc.localize(received_dt)
@@ -257,4 +256,3 @@ def _insert_into_bigquery(df):
     except:
         ER.report_exception()
         return None
-

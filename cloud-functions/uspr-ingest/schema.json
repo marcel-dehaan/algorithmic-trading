@@ -1,0 +1,104 @@
+
+[
+  {
+    "name": "received_dt",
+    "type": "TIMESTAMP",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "publish_dt",
+    "type": "TIMESTAMP",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "ticker",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "exchange",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "title",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "title",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "distributor",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "body_text",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "headlines",
+    "type": "RECORD",
+    "mode": "REPEATED",
+    "fields": [
+      {
+        "name": "hl1",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "hl2",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "IS_codes",
+        "type": "STRING",
+        "mode": "repeated"
+      }
+    ]
+
+
+
+
+
+},
+    "name":
+    "fields": [
+      {
+        "name": "status",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "address",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "city",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "state",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "zip",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "numberOfYears",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      }
+    ]
+  }
+]
