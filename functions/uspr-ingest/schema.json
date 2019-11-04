@@ -1,4 +1,3 @@
-
 [
   {
     "name": "received_dt",
@@ -54,51 +53,12 @@
         "name": "hl2",
         "type": "STRING",
         "mode": "NULLABLE"
-      },
-      {
-        "name": "IS_codes",
-        "type": "STRING",
-        "mode": "repeated"
       }
     ]
-
-
-
-
-
-},
-    "name":
-    "fields": [
-      {
-        "name": "status",
-        "type": "STRING",
-        "mode": "NULLABLE"
-      },
-      {
-        "name": "address",
-        "type": "STRING",
-        "mode": "NULLABLE"
-      },
-      {
-        "name": "city",
-        "type": "STRING",
-        "mode": "NULLABLE"
-      },
-      {
-        "name": "state",
-        "type": "STRING",
-        "mode": "NULLABLE"
-      },
-      {
-        "name": "zip",
-        "type": "STRING",
-        "mode": "NULLABLE"
-      },
-      {
-        "name": "numberOfYears",
-        "type": "STRING",
-        "mode": "NULLABLE"
-      }
-    ]
+  },
+  {
+    "name": "IS_codes",
+    "type": "STRING",
+    "mode": "REPEATED"
   }
 ]

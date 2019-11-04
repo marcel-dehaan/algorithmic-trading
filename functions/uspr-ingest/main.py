@@ -23,25 +23,29 @@ SUCCESS_TOPIC = 'projects/%s/topics/%s' % (PROJECT_ID, 'uspr_streaming_success')
 CNPR_TOPIC = 'projects/%s/topics/%s' % (PROJECT_ID, 'cnpr_streaming')
 SEC_TOPIC = 'projects/%s/topics/%s' % (PROJECT_ID, 'sec_streaming')
 UNKNOWN_TOPIC = 'projects/%s/topics/%s' % (PROJECT_ID, 'unknown_streaming')
-DUPLICATE_TOPIC = 'projects/%s/topics/%s' % (PROJECT_ID, 'uspr-streaming-duplicate')
-NO_TICKER_TOPIC = 'projects/%s/topics/%s' % (PROJECT_ID, 'uspr_streaming_no_ticker')
+DUPLICATE_TOPIC = 'projects/%s/topics/%s' % (PROJECT_ID,
+                                             'uspr-streaming-duplicate')
+NO_TICKER_TOPIC = 'projects/%s/topics/%s' % (PROJECT_ID,
+                                             'uspr_streaming_no_ticker')
 
 CS = storage.Client()
 ER = error_reporting.Client()
-
 BQ = bigquery.Client()
 FS = firestore.Client()
 PS = pubsub_v1.PublisherClient()
 
 
 def streaming(data, context):
-    '''This function is executed whenever a file is added to Cloud Storage'''
+    """This function is executed whenever
+    a file is added to Cloud Storage
+    """
     bucket_name = data['bucket']
     file_name = data['name']
     blob = CS.get_bucket(bucket_name).blob(file_name)
 
     if '_USPR_' in file_name:
-        db_ref = FS.collection(u'uspr_duplicate_check').document(u'%s' % file_name)
+        db_ref = FS.collection(u'uspr_duplicate_check')\
+            .document(u'%s' % file_name)
 
         if _was_already_ingested(db_ref):
             _handle_duplication(db_ref)
@@ -58,19 +62,18 @@ def streaming(data, context):
                     print(f'handled success: {_now()}')
                 else:
                     _handle_no_ticker(file_name)
-
             except:
                 _handle_error(db_ref)
                 ER.report_exception()
 
     elif 'CNPR' or 'CANADA' in file_name:
-        _handle_cnpr()
+        _handle_cnpr(file_name)
 
     elif 'SEC' in file_name:
-        _handle_sec()
+        _handle_sec(file_name)
 
     else:
-        _handle_unknown()
+        _handle_unknown(file_name)
 
 
 def _was_already_ingested(db_ref):
@@ -79,27 +82,36 @@ def _was_already_ingested(db_ref):
 
 
 def _now():
-    return datetime.utcnow().replace(tzinfo=pytz.utc).strftime('%Y-%m-%d %H:%M:%S %Z')
+    return datetime.utcnow()\
+        .replace(tzinfo=pytz.utc).strftime('%Y-%m-%d %H:%M:%S %Z')
 
 
 def _handle_cnpr(file_name):
-    message = 'CNPR streaming file: \'%s\'' % (file_name)
-    PS.publish(CNPR_TOPIC, message.encode('utf-8'), file_name=file_name)
+    message = 'CNPR streaming file: \'%s\'' % file_name
+    PS.publish(CNPR_TOPIC,
+               message.encode('utf-8'),
+               file_name=file_name)
 
 
 def _handle_sec(file_name):
-    message = 'SEC streaming file: \'%s\'' % (file_name)
-    PS.publish(SEC_TOPIC, message.encode('utf-8'), file_name=file_name)
+    message = 'SEC streaming file: \'%s\'' % file_name
+    PS.publish(SEC_TOPIC,
+               message.encode('utf-8'),
+               file_name=file_name)
 
 
 def _handle_no_ticker(file_name):
-    message = 'No ticker streaming file: \'%s\'' % (file_name)
-    PS.publish(NO_TICKER_TOPIC, message.encode('utf-8'), file_name=file_name)
+    message = 'No ticker streaming file: \'%s\'' % file_name
+    PS.publish(NO_TICKER_TOPIC,
+               message.encode('utf-8'),
+               file_name=file_name)
 
 
 def _handle_unknown(file_name):
-    message = 'Unknown streaming file: \'%s\'' % (file_name)
-    PS.publish(UNKNOWN_TOPIC, message.encode('utf-8'), file_name=file_name)
+    message = 'Unknown streaming file: \'%s\'' % file_name
+    PS.publish(UNKNOWN_TOPIC,
+               message.encode('utf-8'),
+               file_name=file_name)
 
 
 def _handle_success(df, db_ref):
@@ -123,7 +135,9 @@ def _handle_success(df, db_ref):
     db_ref.set(doc)
 
     message = 'File \'%s\' streamed into BigQuery' % db_ref.id
-    PS.publish(SUCCESS_TOPIC, message.encode('utf-8'), file_name=db_ref.id)
+    PS.publish(SUCCESS_TOPIC,
+               message.encode('utf-8'),
+               file_name=db_ref.id)
     logging.info(message)
 
 
@@ -135,13 +149,16 @@ def _handle_duplication(db_ref):
     db_ref.update({
         'duplication_attempts': dups
     })
-    message = 'Duplicate streaming file: \'%s\'' % (db_ref.id)
+    message = 'Duplicate streaming file: \'%s\'' % db_ref.id
     print(message)
-    PS.publish(DUPLICATE_TOPIC, message.encode('utf-8'), file_name=db_ref.id)
+    PS.publish(DUPLICATE_TOPIC,
+               message.encode('utf-8'),
+               file_name=db_ref.id)
 
 
 def _handle_error(db_ref):
-    message = 'Error streaming file \'%s\'. Cause: %s' % (db_ref.id, traceback.format_exc())
+    message = 'Error streaming file \'%s\'. Cause: %s' \
+              % (db_ref.id, traceback.format_exc())
     doc = {
         u'success': False,
         u'error_message': message,
@@ -149,13 +166,18 @@ def _handle_error(db_ref):
     }
     db_ref.set(doc)
     logging.error(message)
-    PS.publish(ERROR_TOPIC, message.encode('utf-8'), file_name=db_ref.id)
+    PS.publish(ERROR_TOPIC,
+               message.encode('utf-8'),
+               file_name=db_ref.id
+               )
 
 
 def _scraper(blob, filename):
     soup = bs(blob.download_as_string(), 'xml')
-    title = soup.document.nitf.head.title.get_text() if soup.document.nitf.head.find('title') else None
-    language = soup.find('xn:language').get_text() if soup.find('xn:language') else None
+    title = soup.document.nitf.head.title.get_text() \
+        if soup.document.nitf.head.find('title') else None
+    language = soup.find('xn:language').get_text() \
+        if soup.find('xn:language') else None
 
     body_head = soup.document.body.find('body.head')
     body_content = soup.document.body.find('body.content')
@@ -173,15 +195,19 @@ def _scraper(blob, filename):
         distributor = ''
 
     try:
-        body_text = ''.join(
-            [p.get_text().replace('\xa0', '') for p in body_content.find('div', {'class': 'xn-content'}).find_all('p')
-             if p.get_text() not in ['', ' ', '\xa0']])
+        body_text = \
+            ''.join([p.get_text().replace('\xa0', '')
+                     for p in body_content.find('div', {'class': 'xn-content'})
+                     .find_all('p') if p.get_text() not in ['', ' ', '\xa0']])
     except:
         ER.report_exception()
         body_text = ''
 
     try:
-        exchange, ticker = soup.find('xn:companyCode').get_text().split('#', 1)[0].split(':', 1)
+        exchange, ticker = \
+            soup.find('xn:companyCode') \
+            .get_text().split('#', 1)[0].split(':', 1)
+
         if len(exchange.split('-', 1)) > 1:
             exchange = exchange.split('-', 1)[0]
     except:
@@ -190,22 +216,26 @@ def _scraper(blob, filename):
 
     try:
         publish_dt = soup.find('xn:publicationTime').get_text()
-        publish_dt = datetime.strptime(publish_dt, '%Y-%m-%dT%H:%M:%S%z').astimezone()
+        publish_dt = datetime.strptime(publish_dt,
+                                       '%Y-%m-%dT%H:%M:%S%z').astimezone()
     except Exception as e:
         ER.report_exception()
         publish_dt = ''
 
     try:
         received_dt = \
-            [x.get_text() for x in soup.find_all('vendorData') if 'Special Code=PC/t' in x.get_text()][0].split('t.')[
-                -1]
+            [x.get_text() for x in soup.find_all('vendorData')
+             if 'Special Code=PC/t' in x.get_text()][0].split('t.')[-1]
         received_dt = datetime.strptime(received_dt, '%y%m%d%H%M%S%f')
-        received_dt += timedelta(hours=int(soup.find('xn:publicationTime').get_text()[-4]))
+        received_dt += timedelta(hours=int(soup.find('xn:publicationTime')
+                                           .get_text()[-4]))
         received_dt = pytz.utc.localize(received_dt)
+
     except:
         try:
             received_dt = soup.find('xn:receivedTime').get_text()
-            received_dt = datetime.strptime(received_dt, '%Y-%m-%dT%H:%M:%S%z').astimezone()
+            received_dt = datetime.strptime(received_dt,
+                                            '%Y-%m-%dT%H:%M:%S%z').astimezone()
         except:
             ER.report_exception()
             received_dt = ''
@@ -213,8 +243,9 @@ def _scraper(blob, filename):
     IS = {'type': 'subjectCode', 're': '^IS', 'codes': []}
 
     for code in [IS]:
-        [code['codes'].append(c.text.split('#', 1)[0].split('/', 1)[1]) for c in soup.find_all(code['type']) if
-         re.compile(code['re']).match(c.text.split('#', 1)[0])]
+        [code['codes'].append(c.text.split('#', 1)[0].split('/', 1)[1])
+         for c in soup.find_all(code['type']) if re.compile(code['re'])
+         .match(c.text.split('#', 1)[0])]
 
     data = [[
         received_dt, publish_dt, ticker, exchange, title,
