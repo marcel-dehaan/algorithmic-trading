@@ -1,4 +1,9 @@
 [
+    {
+    "name": "filename",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
   {
     "name": "received_dt",
     "type": "TIMESTAMP",
@@ -16,11 +21,6 @@
   },
   {
     "name": "exchange",
-    "type": "STRING",
-    "mode": "NULLABLE"
-  },
-  {
-    "name": "title",
     "type": "STRING",
     "mode": "NULLABLE"
   },
