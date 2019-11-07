@@ -1,20 +1,15 @@
-from functions.py import *
-import pandas as pd
-import numpy as np
-
-from google.cloud import bigquery
-from google.cloud import firestore
-from google.cloud.exceptions import NotFound
-
-import pyarrow
+from funcs import *
+from settings import *
 from datetime import datetime, timedelta, time
-from calendar import monthrange
-import timeit
-import time as t
-
-import os
 from ib_insync import *
-import pytz
+from flask import Flask
+
+app = Flask(__name__)
+log = app.logger
+
+BQ = connect_bigquery()
+FS = connect_firestore()
+IB = connect_ib()
 
 while read_tickers(document=DOCUMENT):
 
@@ -25,7 +20,6 @@ while read_tickers(document=DOCUMENT):
         ticker = tickers_in_doing[0]
 
         print(f'\n{"#" * 52}\n{"#" * 15} DOING LIST NOT EMPTY {"#" * 15}\n{"#" * 52}\n')
-
         print(f'{len(tickers_in_doing)} ticker(s) in doing')
 
 
@@ -64,7 +58,7 @@ while read_tickers(document=DOCUMENT):
 
     for tick_type, postfix in tick_dict.items():
 
-        table = dataset.table(ticker + '_' + postfix)
+        table = DATASET.table(ticker + '_' + postfix)
 
         print(f'\n{"=" * 52}\n\n{ticker}')
         print(f'Tick type: {tick_type}')
@@ -77,7 +71,7 @@ while read_tickers(document=DOCUMENT):
             SELECT
               MAX(datetime)
             FROM
-              {dataset.dataset_id}.{table.table_id}
+              {DATASET.dataset_id}.{table.table_id}
             """
             df = BQ.query(sql).to_dataframe()
             start = df.iloc[0] + timedelta(seconds=1)
@@ -138,3 +132,6 @@ while read_tickers(document=DOCUMENT):
             else:
                 start += timedelta(hours=4)
                 print(start)
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0')

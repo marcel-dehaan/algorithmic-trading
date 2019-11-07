@@ -5,13 +5,13 @@ google-cloud-logging == 1.14.0
 google-cloud-error-reporting == 0.33.0
 google-cloud-firestore == 1.5.0
 google-cloud-pubsub == 1.0.2
-
 beautifulsoup4 == 4.8.1
 pandas == 0.25.2
-datetime3 ==3.8.0
+datetime3 == 3.8.0
 pytz == 2019.3
 regex == 2019.08.19
 lxml == 4.4.1
 pyarrow == 0.15.0
 ib-insync 0.9.56
 pyarrow == 0.15.0
+Flask == 1.1.1

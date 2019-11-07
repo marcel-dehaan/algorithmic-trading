@@ -1,16 +1,24 @@
+from ib_insync import util
+import os
+from datetime import datetime, timedelta, time
+from google.cloud import bigquery, storage, firestore
+from ib_insync import *
+
+
 def connect_ib(port, account, ip_address='127.0.0.1', client_id_range=11, IB=IB):
-    """ Connects to IB
+    """ Creates IB Client
 
     Args:
         port: port to connect to.
         ip_address: ip address
         client_id_range: the range of clients to try. 11 -> 0 to 10
+        IB:
 
     Returns:
-        BQ: Connected Interactive Broker Client
+        BQ: Interactive Broker Client
 
     Raises:
-        Exception: If no client_id in range are available on port.
+        Exception: If no client_id are available on the port.
     """
 
     util.startLoop()

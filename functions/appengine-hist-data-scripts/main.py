@@ -266,19 +266,6 @@ def _insert_into_bigquery(df):
     table = BQ.dataset(BQ_DATASET).table(BQ_TABLE)
     job_config = bigquery.LoadJobConfig()
     job_config.write_disposition = 'WRITE_APPEND'
-
-    job_config.schema = [
-        bigquery.SchemaField('received_dt', 'TIMESTAMP', mode='NULLABLE'),
-        bigquery.SchemaField('publish_dt', 'TIMESTAMP', mode='NULLABLE'),
-        bigquery.SchemaField('ticker', 'STRING', mode='REQUIRED'),
-        bigquery.SchemaField('exchange', 'STRING', mode='NULLABLE'),
-        bigquery.SchemaField('title', 'STRING', mode='NULLABLE'),
-        bigquery.SchemaField('distributor', 'STRING', mode='NULLABLE'),
-        bigquery.SchemaField('body_text', 'STRING', mode='NULLABLE'),
-        bigquery.SchemaField('language', 'STRING', mode='NULLABLE'),
-        bigquery.SchemaField('filename', 'STRING', mode='NULLABLE')
-    ]
-
     table = BQ.dataset(BQ_DATASET).table(BQ_TABLE)
     try:
         job = BQ.load_table_from_dataframe(dataframe=df,
