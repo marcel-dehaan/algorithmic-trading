@@ -11,5 +11,5 @@ pandas == 0.25.2
 datetime3 ==3.8.0
 pytz == 2019.3
 regex == 2019.08.19
-lxml == 4.4.1
+lxml == 4.6.3
 pyarrow == 0.15.0
